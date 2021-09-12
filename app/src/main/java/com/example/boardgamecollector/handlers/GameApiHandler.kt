@@ -2,7 +2,7 @@ package com.example.boardgamecollector.handlers
 
 import android.os.AsyncTask
 import com.example.boardgamecollector.GameOLD
-import com.example.boardgamecollector.XMLParser
+import com.example.boardgamecollector.XMLParserOLD
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -20,7 +20,7 @@ class GameApiHandler(var game: GameOLD) : AsyncTask<String, GameOLD, GameOLD>() 
             urlConnection.readTimeout = CONNECTON_TIMEOUT_MILLISECONDS
 
             var inGame =
-                XMLParser.parseToGame(
+                XMLParserOLD.parseToGame(
                     urlConnection.inputStream
                 )
             inGame.gameTitle = game.gameTitle

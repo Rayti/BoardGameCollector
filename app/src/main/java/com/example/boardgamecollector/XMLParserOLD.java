@@ -7,7 +7,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.InputStream;
 
-public class XMLParser {
+public class XMLParserOLD {
 
     public static GameOLD parseToSimpleGame(InputStream is) {
         try {
@@ -24,7 +24,7 @@ public class XMLParser {
                 String text = "";
                 //Log.d(XMLParser.class.getName(), "IN TAG <" + tagName + ">");
                 if (tagName!= null && tagName.equalsIgnoreCase("item") && !flag) {
-                    Log.d(XMLParser.class.getName(), "IN TAG <" + tagName + " id=" + parser.getAttributeValue(null, "id") + ">");
+                    Log.d(XMLParserOLD.class.getName(), "IN TAG <" + tagName + " id=" + parser.getAttributeValue(null, "id") + ">");
                     game.setId(Integer.parseInt(parser.getAttributeValue(null, "id")));
                     flag = true;
                 }
@@ -89,7 +89,7 @@ public class XMLParser {
                 }
                 eventType = parser.next();
             }
-            Log.d(XMLParser.class.getName(), String.valueOf(game));
+            Log.d(XMLParserOLD.class.getName(), String.valueOf(game));
             return game;
         } catch (Exception e) {
             e.printStackTrace();
