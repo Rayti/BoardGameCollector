@@ -1,6 +1,6 @@
 package com.example.boardgamecollector.bddApi.xmlparser
 
-import com.example.boardgamecollector.to.Game
+import com.example.boardgamecollector.model.Game
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
@@ -13,7 +13,7 @@ class BoardGameSearchRequestXmlParser: XmlParser<List<Game>> {
         val factory = XmlPullParserFactory.newInstance()
         factory.isNamespaceAware = true
         val parser = factory.newPullParser()
-        parser.setInput(inputStream, null); //TODO encoding for special letters need to be checked
+        parser.setInput(inputStream, null);
         var eventType = parser.eventType
         while(eventType != XmlPullParser.END_DOCUMENT){
             if(eventType == XmlPullParser.START_TAG && parser.name != null && parser.name == "item"){
@@ -26,7 +26,7 @@ class BoardGameSearchRequestXmlParser: XmlParser<List<Game>> {
     }
 
     private fun parseItemNode(parser: XmlPullParser): Game{
-        val gameId: Long? = parser.getAttributeValue(null, "id")?.toLong()
+        val gameId: Int? = parser.getAttributeValue(null, "id")?.toInt()
         parser.next() // <item>TEXT</item>
         parser.next() //<name>
         val title: String? = parser.getAttributeValue(null, "value")
@@ -36,8 +36,8 @@ class BoardGameSearchRequestXmlParser: XmlParser<List<Game>> {
         val yearPublished: Int? = parser.getAttributeValue(null, "value")?.toInt()
         parser.next() //</yearpublished>
         parser.next() //</item>
-        return Game(gameId, title, yearPublished, null, null, null,
-            null, null, null, null, null, null, null,
-            null, null, null, null)
+        return Game(null, title, yearPublished, null, null, null,
+            null, null, null, null, null, gameId, null,
+            null, null, null, null, null)
     }
 }
