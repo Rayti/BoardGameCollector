@@ -192,6 +192,23 @@ class DataBase(context: Context) :
         return  games
     }
 
+    fun countGames(location: String): Int {
+        val db = this.readableDatabase
+
+        val locationIdQuery = "SELECT $LOCATION_ID FROM $LOCATIONS_TABLE WHERE $LOCATION = $location"
+
+        try {
+            val cursor = db.rawQuery("SELECT count(*) AS cc FROM $GAMES_TABLE WHERE $LOCATION_ID = ($locationIdQuery)", null)
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(cursor.getColumnIndex("cc"))
+            }
+            return 0
+        } catch (e: SQLiteException) {
+            return 0
+        }
+
+    }
+
     fun addLocation(location: String) {
         val db = this.writableDatabase
         val values = ContentValues()
