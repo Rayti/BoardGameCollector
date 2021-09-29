@@ -1,5 +1,6 @@
 package com.example.boardgamecollector
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseFindCurrentRankings
 import com.example.boardgamecollector.bddApi.async.response.AsyncResponseImportGameCollection
 import com.example.boardgamecollector.dao.DataBase
 import com.example.boardgamecollector.model.Game
@@ -53,7 +55,7 @@ class ImportCollectionActivity: AppCompatActivity(), AsyncResponseImportGameColl
         importButton.setOnClickListener { v ->
             Log.d("BUTTON", "Clicked IMPORT COLLECTION button")
             if (searchUser?.text.toString().isNotEmpty()) {
-                Toast.makeText(this, "Importing games from user ${searchUser!!.text.toString()}", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "Importing games from user ${searchUser!!.text.toString()}", Toast.LENGTH_SHORT).show()
                 bggSearchService!!.importGameCollection(searchUser!!.text.toString(), this)
             }
         }
@@ -68,9 +70,9 @@ class ImportCollectionActivity: AppCompatActivity(), AsyncResponseImportGameColl
         addViewParams(updateButton, 1.0F)
         updateButton.setOnClickListener { v ->
             Log.d("BUTTON", "Clicked UPDATE RANKS button")
-
-
-            //TODO
+            Toast.makeText(this, "Updating stored games ranking with BGG website", Toast.LENGTH_SHORT).show()
+            bggSearchService!!.findCurrentRankings(searchUser?.text.toString(),
+                    gameService!!.getStoredGames(), this.AsyncResponseFindCurrentRankingsImpl())
         }
         val row = TableRow(this)
         row.addView(updateButton)
@@ -100,7 +102,34 @@ class ImportCollectionActivity: AppCompatActivity(), AsyncResponseImportGameColl
     override fun processFinish(t: ArrayList<Game>) {
         gameService!!.deleteAllGames()
         t.forEach { game -> gameService!!.storeGame(game) }
-        Toast.makeText(this, "Games import finished", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Games import finished", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun getContext(): Context {
+        return this
+    }
+
+    inner class AsyncResponseFindCurrentRankingsImpl : AsyncResponseFindCurrentRankings {
+        override fun processFinish(t: ArrayList<Pair<Int, Int?>>) {
+            val games = gameService!!.getStoredGames()
+            val count = t.stream().filter { p ->
+                val game = getGameByBGGId(games, p.first)
+                if (game != null) {
+                    val tmp = game.rank
+                    game.rank = p.second
+                    if(tmp != p.second) gameService!!.editStoredGame(game)
+                    tmp != p.second
+                }else{
+                    false
+                }
+            }.count()
+            Toast.makeText(getContext(), "Games ranking update finished for $count games", Toast.LENGTH_SHORT).show()
+        }
+
+        private fun getGameByBGGId(games: ArrayList<Game>, id: Int): Game? {
+            return games.stream().filter{ g -> g.bggId == id}
+                    .findFirst().orElse(null)
+        }
 
     }
 }
