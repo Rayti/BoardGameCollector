@@ -1,11 +1,13 @@
 package com.example.boardgamecollector.bddApi
 
+import android.os.AsyncTask
 import android.util.Log
+import com.example.boardgamecollector.bddApi.xmlparser.XmlParser
 import java.io.InputStream
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
-class BggApiCaller {
+class BggApiCaller{
 
     public fun request(url: String): InputStream?{
         val inputStream: InputStream
@@ -23,4 +25,5 @@ class BggApiCaller {
         }
         return null
     }
+
 }

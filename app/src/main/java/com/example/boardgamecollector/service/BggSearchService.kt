@@ -1,19 +1,21 @@
 package com.example.boardgamecollector.service
 
+import com.example.boardgamecollector.bddApi.AsyncResponse
 import com.example.boardgamecollector.bddApi.BggApiCaller
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseImportGameCollection
+import com.example.boardgamecollector.bddApi.async.task.AsyncTaskImportGameCollection
 import com.example.boardgamecollector.bddApi.xmlparser.BoardGameCollectionRequestXmlParser
 import com.example.boardgamecollector.bddApi.xmlparser.BoardGameSearchRequestXmlParser
 import com.example.boardgamecollector.bddApi.xmlparser.BoardGameThingRequestXmlParser
 import com.example.boardgamecollector.bddApi.xmlparser.XmlParser
 import com.example.boardgamecollector.model.Game
+import java.io.InputStream
 
 class BggSearchService {
 
-    val apiCaller = BggApiCaller()
-    val ADDRESS = "https://www.boardgamegeek.com/xmlapi2/"
-
-    fun searchGamesByTitle(title: String): ArrayList<Game> {
+    /*fun searchGamesByTitle(title: String): ArrayList<Game> {
         val xmlParser: XmlParser<List<Game>> = BoardGameSearchRequestXmlParser()
+        val apiCaller = BggApiCaller(xmlParser, this)
         val stream = apiCaller.request("$ADDRESS/search?query=$title&type=boardgame")
         if (stream != null) {
             return ArrayList(xmlParser.parseXml(stream))
@@ -28,9 +30,13 @@ class BggSearchService {
             return  xmlParser.parseXml(stream)
         }
         return null
+    }*/
+
+    fun importGameCollection(username: String, responseDelegate: AsyncResponseImportGameCollection) {
+        AsyncTaskImportGameCollection(responseDelegate).execute(username)
     }
 
-    fun importGameCollection(username: String): ArrayList<Game> {
+    /*fun importGameCollection(username: String): ArrayList<Game> {
         val xmlParser: XmlParser<List<Game>> = BoardGameCollectionRequestXmlParser()
         val stream = apiCaller.request("$ADDRESS/collection?username=$username")
         if (stream != null) {
@@ -47,9 +53,9 @@ class BggSearchService {
         return null
     }
 
-    /**
+    *//**
         @return list of Pair where key is game bggId and value is it's rank
-     */
+     *//*
     fun searchCurrentRanking(username: String): ArrayList<Pair<Int, Int?>> {
         val games = importGameCollection(username)
         val rankings = ArrayList<Pair<Int, Int?>>()
@@ -60,11 +66,11 @@ class BggSearchService {
         return rankings
     }
 
-    /**
+    *//**
      * @param games games for which we want to update ranking
      * @param username user on whose collection games array is based
      * @return list of Pair where key is game bggId and value is it's rank
-     */
+     *//*
     fun searchCurrentRanking(username: String, games: ArrayList<Game>): ArrayList<Pair<Int, Int?>> {
         val rankings = searchCurrentRanking(username)
 
@@ -86,7 +92,5 @@ class BggSearchService {
         return rankings
     }
 
-    //TODO ADD FOUND RANKINGS TO DB
-
-
+    //TODO ADD FOUND RANKINGS TO DB*/
 }
