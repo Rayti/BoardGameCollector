@@ -30,16 +30,16 @@ class BggSearchService {
         AsyncTaskImportGameCollection(responseDelegate).execute(username)
     }
 
-    /*
 
-    fun searchCurrentRanking(game: Game): Int? {
+/*    fun searchCurrentRanking(game: Game): Int? {
         val id = game.bggId
         if (id != null) {
             return findGameThingById(id)?.rank
         }
         return null
-    }
+    }*/
 
+/*
     *//**
         @return list of Pair where key is game bggId and value is it's rank
      *//*
@@ -77,7 +77,7 @@ class BggSearchService {
                 }
 
         return rankings
-    }
+    }*/
 
     //TODO ADD FOUND RANKINGS TO DB*/
 }

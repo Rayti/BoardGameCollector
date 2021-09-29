@@ -110,7 +110,7 @@ class DataBase(context: Context) :
         try {
             val gameQuery = "SELECT * FROM $GAMES_TABLE WHERE $GAME_ID = $id"
             gameCursor = db.rawQuery(gameQuery, null)
-            System.out.println(gameCursor.count)
+            //System.out.println(gameCursor.count)
 
             val artistQuery = "SELECT $NAME FROM $ARTISTS_TABLE WHERE $GAME_ID = $id"
             artistCursor = db.rawQuery(artistQuery, null)
@@ -126,7 +126,7 @@ class DataBase(context: Context) :
         }
         var game: Game? = null
         if (gameCursor!!.moveToFirst()) {
-            System.out.println("FOUND GAME")
+           // System.out.println("FOUND GAME")
             game = parseToGame(gameCursor)
             if (locationCursor.moveToFirst()) game.location = locationCursor.getString(locationCursor.getColumnIndex(LOCATION))
             game.artists = parseArtistsOrDesignersQuery(artistCursor)

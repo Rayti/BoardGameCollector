@@ -23,10 +23,11 @@ class AsyncTaskSearchGamesByTitle(val response: AsyncResponseSearchGameByTitle):
 
     override fun onPostExecute(result: ArrayList<Game>?) {
         super.onPostExecute(result)
-        Log.d("ASYNC", "Finished ${AsyncTaskSearchGamesByTitle::class.java.canonicalName}")
+        Log.d("ASYNC", "Finished ${AsyncTaskSearchGamesByTitle::class.java.canonicalName}, found ${result?.size}")
         if (result != null) {
             response.processFinish(result)
+        }else{
+            response.processFinish(ArrayList())
         }
-        response.processFinish(ArrayList())
     }
 }

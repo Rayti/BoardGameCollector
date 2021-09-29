@@ -1,42 +1,62 @@
 package com.example.boardgamecollector
 
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.view.ViewManager
 import android.widget.*
 import androidx.core.view.children
 import com.example.boardgamecollector.bddApi.async.response.AsyncResponseImportGameCollection
+import com.example.boardgamecollector.dao.DataBase
 import com.example.boardgamecollector.model.Game
-import com.example.boardgamecollector.service.BggSearchService
+import com.example.boardgamecollector.service.GameService
 
-class MainActivity : AppCompatActivity(), AsyncResponseImportGameCollection {
+class MainActivity : AppCompatActivity() {
 
     var tableLayout: TableLayout? = null
+    var gameService: GameService? = null
+    var cachedGames: ArrayList<Game> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("DEBUG", "ON CREATE MAIN ACTIVITY")
 
-        val bggSearchService = BggSearchService()
-        bggSearchService.importGameCollection("rahdo", this)
 
-        createTable(ArrayList())
+        gameService = GameService(DataBase(this))
+        cachedGames = gameService!!.getStoredGames()
+        createTable(cachedGames)
+        val testGame = Game()
+        testGame.title = "TITLE"
+        testGame.publishedYear = 1234
+        testGame.description = "description"
+        testGame.image = "image"
+        cachedGames.add(testGame)
+
+        val tesGame2 = Game()
+        tesGame2.title = "TITLE"
+        tesGame2.publishedYear = 1232
+        tesGame2.description = "description"
+        tesGame2.image = "image"
+        cachedGames.add(tesGame2)
+
+        //createTable(cachedGames)
 
         val scrollView = ScrollView(this)
         scrollView.addView(tableLayout)
         setContentView(scrollView)
-
-
     }
 
-
-
     private fun createTable(games: ArrayList<Game>) {
+        Log.d("DEBUG", "CREATING TABLE")
+
         if (tableLayout == null) {
             tableLayout = TableLayout(this)
         }
@@ -52,14 +72,30 @@ class MainActivity : AppCompatActivity(), AsyncResponseImportGameCollection {
         val addButton = Button(this)
         addButton.text = "Add new game"
         addViewParams(addButton, 2F)
+        addButton.setOnClickListener { v ->
+            Log.d("BUTTON", "Clicked ADD NEW GAME button")
+            val  intent = Intent(this, AddGameActivity::class.java)
+            startActivity(intent)
+        }
 
         val sortDateButton = Button(this)
         sortDateButton.text = "Sort by date"
         addViewParams(sortDateButton, 1F)
+        sortDateButton.setOnClickListener { v ->
+            Log.d("BUTTON", "Clicked SORT BY DATE button")
+            gameService!!.sortGamesByDate(cachedGames)
+            createTable(cachedGames)
+        }
 
         val sortRankButton = Button(this)
         addViewParams(sortRankButton, 1F)
         sortRankButton.text = "Sort by rank"
+        sortRankButton.setOnClickListener { v ->
+            Log.d("BUTTON", "Clicked SORT BY RANK button")
+            gameService!!.sortGamesByRank(cachedGames)
+            createTable(cachedGames)
+        }
+
 
         val row = TableRow(this)
         addViewsToTableRow(row, addButton, sortDateButton, sortRankButton)
@@ -89,8 +125,24 @@ class MainActivity : AppCompatActivity(), AsyncResponseImportGameCollection {
         addViewParams(field1, 1F)
         field1.text = number.toString()
 
+        val delButton = Button(this)
+        delButton.text = "DELETE"
+        addViewParams(delButton, 0.2F)
+        delButton.setOnClickListener {v ->
+            Log.d("BUTTON", "Clicked DELETE button")
+            val view = v.parent.parent.parent as ViewManager
+            view.removeView(v.parent.parent as ViewGroup)
+            gameService?.deleteGame(game)
+        }
+
+        val linearLayout = LinearLayout(this)
+        addLinearLayoutParams(linearLayout, 1F)
+        linearLayout.addView(field1)
+        linearLayout.addView(delButton)
+
         val field2 = TextView(this)
         addViewParams(field2, 2F)
+        field2.maxLines = 2
         field2.text = game.image
 
         val field3 = TextView(this)
@@ -98,18 +150,16 @@ class MainActivity : AppCompatActivity(), AsyncResponseImportGameCollection {
         val text = "${game.title} (${game.publishedYear}) \n ${game.description}"
         val spannable = SpannableString(text)
         spannable.setSpan(ForegroundColorSpan(Color.BLUE), 0, "${game.title}".length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE )
+        field3.maxLines = 6
         field3.setText(spannable, TextView.BufferType.SPANNABLE)
 
         val row = TableRow(this)
-        addViewsToTableRow(row, field1, field2, field3)
+        addViewsToTableRow(row, linearLayout, field2, field3)
         return row
     }
 
     private fun cleanTableLayout(layout: TableLayout) {
-        layout.children.iterator().forEach { child ->
-            val parent = child.parent as ViewManager
-            parent.removeView(child)
-        }
+        layout.removeAllViews()
     }
 
     private fun addViewParams(view: TextView, weight: Float){
@@ -118,12 +168,12 @@ class MainActivity : AppCompatActivity(), AsyncResponseImportGameCollection {
         view.layoutParams = TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, weight)
     }
 
-    private fun addViewsToTableRow(row: TableRow, vararg views: TextView) {
-        views.forEach { v -> row.addView(v) }
+    private fun addLinearLayoutParams(layout: LinearLayout, weight: Float) {
+        layout.layoutParams = TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, weight)
     }
 
-    override fun processFinish(t: ArrayList<Game>) {
-        createTable(t)
+    private fun addViewsToTableRow(row: TableRow, vararg views: View) {
+        views.forEach { v -> row.addView(v) }
     }
 }//https://www.boardgamegeek.com/xmlapi2/search?query=kawerna&type=boardgame
 

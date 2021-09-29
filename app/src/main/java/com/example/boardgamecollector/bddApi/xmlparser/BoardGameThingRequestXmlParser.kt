@@ -1,5 +1,6 @@
 package com.example.boardgamecollector.bddApi.xmlparser
 
+import android.util.Log
 import com.example.boardgamecollector.model.Game
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory

@@ -23,11 +23,12 @@ class AsyncTaskImportGameCollection(val response: AsyncResponseImportGameCollect
     }
 
     override fun onPostExecute(result: ArrayList<Game>?) {
-        Log.d("ASYNC", "Finished ${AsyncResponseImportGameCollection::class.java.canonicalName}")
+        Log.d("ASYNC", "Finished ${AsyncResponseImportGameCollection::class.java.canonicalName}, found ${result?.size}")
         super.onPostExecute(result)
         if (result != null) {
             response.processFinish(result)
+        }else{
+            response.processFinish(ArrayList())
         }
-        response.processFinish(ArrayList())
     }
 }

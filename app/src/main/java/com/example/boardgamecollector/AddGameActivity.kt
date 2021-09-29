@@ -3,39 +3,159 @@ package com.example.boardgamecollector
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.text.Editable
+import android.util.Log
+import android.view.Gravity
+import android.view.ViewGroup
+import android.widget.*
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseFindGameById
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseSearchGameByTitle
+import com.example.boardgamecollector.dao.DataBase
 import com.example.boardgamecollector.dao.DbHandler
 import com.example.boardgamecollector.handlers.GameApiHandler
 import com.example.boardgamecollector.handlers.SimpleGameApiHandler
+import com.example.boardgamecollector.model.Game
+import com.example.boardgamecollector.service.BggSearchService
+import com.example.boardgamecollector.service.GameService
 
-class AddGameActivity : AppCompatActivity() {
+class AddGameActivity : AppCompatActivity(), AsyncResponseSearchGameByTitle{
+    var tableLayout: TableLayout? = null
+    var searchTitle: EditText? = null
+    var bggSearchService: BggSearchService? = null
+    var gameService: GameService? = null
+    var cachedGames: ArrayList<Game> = ArrayList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_game)
 
-        val searchTitle: TextView = findViewById(R.id.SearchTitleAddGameAct)
-        val searchButton: Button = findViewById(R.id.SearchButtonAddGameAct)
-        var searchResult: TextView = findViewById(R.id.SearchResultAddGameAct)
-        var saveButton: Button = findViewById(R.id.SaveButtonAddGameAct)
-        var goBackButton: Button = findViewById(R.id.GoBackButtonAddGameAct)
+        bggSearchService = BggSearchService()
+        gameService = GameService(DataBase(this))
 
-        var game: GameOLD = GameOLD()
-        searchButton.setOnClickListener{
-            SimpleGameApiHandler(game, searchResult).execute("https://www.boardgamegeek.com/xmlapi2/search?query=${searchTitle.text}&type=boardgame")
+        val scrollView = ScrollView(this)
+        createTable(cachedGames)
+
+        scrollView.addView(tableLayout)
+        setContentView(scrollView)
+    }
+
+    private fun createTable(games: ArrayList<Game>) {
+        Log.d("DEBUG", "CREATING TABLE for ${games.size} games")
+        if (tableLayout == null) {
+            tableLayout = TableLayout(this)
+        }
+        tableLayout!!.removeAllViews()
+        tableLayout!!.addView(createFirstRow())
+        tableLayout!!.addView(createSecondRow())
+        tableLayout!!.addView(createHeaderRow())
+        val testGame = Game()
+        testGame.title = "TITLE"
+        testGame.publishedYear = 1234
+        testGame.description = "description"
+        testGame.image = "image"
+        games.forEach { game -> tableLayout!!.addView(createGameRow(game)) }
+    }
+
+    private fun createFirstRow(): TableRow {
+        searchTitle = EditText(this)
+        searchTitle!!.text = Editable.Factory.getInstance().newEditable("")
+
+        addViewParams(searchTitle!!, 1F)
+
+        val tableRow = TableRow(this)
+        tableRow.addView(searchTitle)
+        return tableRow
+    }
+
+    private fun createSecondRow(): TableRow{
+        val searchButton = Button(this)
+        searchButton.setText("SEARCH")
+        addViewParams(searchButton, 1F)
+        searchButton.setOnClickListener { v ->
+            Log.d("BUTTON", "Clicked SEARCH button (${searchTitle?.text.toString()})")
+            if (searchTitle?.text.toString().isNotEmpty()) {
+                bggSearchService?.searchGamesByTitle(searchTitle?.text.toString(), this)
+            }
         }
 
-        saveButton.setOnClickListener{
-            GameApiHandler(game).execute("https://www.boardgamegeek.com/xmlapi2/thing?id=${game.id}&stats=1")
-            val dbHandler = DbHandler(this, null, null, 1)
-            dbHandler.addGame(game)
-            Toast.makeText(this@AddGameActivity, "Gra dodana do bazy", Toast.LENGTH_SHORT).show()
-        }//https://www.boardgamegeek.com/xmlapi2/thing?id=102794&stats=1
-
-        goBackButton.setOnClickListener{
+        val goToMain = Button(this)
+        addViewParams(goToMain, 1F)
+        goToMain.setText("RETURN")
+        goToMain.setOnClickListener { v ->
+            Log.d("BUTTON", "Clicked RETURN button")
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+        }
+
+        val tableRow = TableRow(this)
+        tableRow.addView(searchButton)
+        tableRow.addView(goToMain)
+        return tableRow
+    }
+
+    private fun createHeaderRow(): TableRow {
+
+        val field1 = TextView(this)
+        addViewParams(field1, 1F)
+        field1.text = "Title"
+
+        val field2 = TextView(this)
+        field2.text = "Year"
+        addViewParams(field2, 1F)
+
+        val field3 = TextView(this)
+        addViewParams(field3, 1F)
+        field3.text = "Action"
+
+        val row = TableRow(this)
+        row.addView(field1)
+        row.addView(field2)
+        row.addView(field3)
+        return row
+    }
+
+    private fun createGameRow(game: Game): TableRow {
+        val title = TextView(this)
+        addViewParams(title, 1F)
+        title.text = game.title
+
+        val year = TextView(this)
+        addViewParams(year, 1F)
+        year.text = game.publishedYear.toString()
+
+        val importButton = Button(this)
+        addViewParams(importButton, 1F)
+        importButton.text = "IMPORT"
+        importButton.setOnClickListener { v ->
+            if (game.bggId != null) {
+                bggSearchService!!.findGameThingById(game.bggId!!, this.AsyncResponseFindGameByIdImpl())
+            }
+        }
+
+        val row = TableRow(this)
+        row.addView(title)
+        row.addView(year)
+        row.addView(importButton)
+        return row
+    }
+
+    private fun addViewParams(view: TextView, weight: Float){
+        view.gravity = Gravity.CENTER
+        view.width = 0
+        view.layoutParams = TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, weight)
+    }
+
+    override fun processFinish(t: ArrayList<Game>) {
+        val temporal = searchTitle?.text.toString()
+        createTable(t)
+        searchTitle?.setText(temporal)
+    }
+
+
+    inner class AsyncResponseFindGameByIdImpl: AsyncResponseFindGameById{
+        override fun processFinish(t: Game?) {
+            if (t != null) {
+                gameService?.storeGame(t)
+            }
         }
     }
 }

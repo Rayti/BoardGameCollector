@@ -23,7 +23,7 @@ class AsyncTaskFindGameById(val response: AsyncResponseFindGameById) : AsyncTask
     }
 
     override fun onPostExecute(result: Game?) {
-        Log.d("ASYNC", "Finished ${AsyncTaskFindGameById::class.java.canonicalName}")
+        Log.d("ASYNC", "Finished ${AsyncTaskFindGameById::class.java.canonicalName}, found $result")
         response.processFinish(result)
         super.onPostExecute(result)
     }
