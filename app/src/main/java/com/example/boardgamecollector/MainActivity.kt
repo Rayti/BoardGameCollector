@@ -27,28 +27,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("DEBUG", "ON CREATE MAIN ACTIVITY")
-
-
         gameService = GameService(DataBase(this))
         cachedGames = gameService!!.getStoredGames()
         createTable(cachedGames)
-        val testGame = Game()
-        testGame.title = "TITLE"
-        testGame.publishedYear = 1234
-        testGame.description = "description"
-        testGame.image = "image"
-        cachedGames.add(testGame)
-
-        val tesGame2 = Game()
-        tesGame2.title = "TITLE"
-        tesGame2.publishedYear = 1232
-        tesGame2.description = "description"
-        tesGame2.image = "image"
-        cachedGames.add(tesGame2)
-
-        //createTable(cachedGames)
-
         val scrollView = ScrollView(this)
         scrollView.addView(tableLayout)
         setContentView(scrollView)
@@ -61,14 +42,14 @@ class MainActivity : AppCompatActivity() {
             tableLayout = TableLayout(this)
         }
         cleanTableLayout(tableLayout!!)
-        tableLayout!!.addView(createButtonRow())
+        createButtonRows().forEach { row -> tableLayout!!.addView(row) }
         tableLayout!!.addView(createHeaderRow())
         for (i in 0 until games.size) {
             tableLayout!!.addView(createGameRow(i + 1, games[i]))
         }
     }
 
-    private fun createButtonRow(): TableRow {
+    private fun createButtonRows(): ArrayList<TableRow> {
         val addButton = Button(this)
         addButton.text = "Add new game"
         addViewParams(addButton, 2F)
@@ -85,6 +66,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("BUTTON", "Clicked SORT BY DATE button")
             gameService!!.sortGamesByDate(cachedGames)
             createTable(cachedGames)
+            Toast.makeText(this, "Sorted by date", Toast.LENGTH_SHORT).show()
         }
 
         val sortRankButton = Button(this)
@@ -94,12 +76,23 @@ class MainActivity : AppCompatActivity() {
             Log.d("BUTTON", "Clicked SORT BY RANK button")
             gameService!!.sortGamesByRank(cachedGames)
             createTable(cachedGames)
+            Toast.makeText(this, "Sorted by rank", Toast.LENGTH_SHORT).show()
         }
 
 
         val row = TableRow(this)
         addViewsToTableRow(row, addButton, sortDateButton, sortRankButton)
-        return row
+
+        val row2 = TableRow(this)
+        val bggImportButton = Button(this)
+        bggImportButton.setText("IMPORT USER COLLECTION")
+        bggImportButton.setOnClickListener { v ->
+            val intent = Intent(this, ImportCollectionActivity::class.java)
+            startActivity(intent)
+        }
+        addViewParams(bggImportButton, 1.0F)
+        row2.addView(bggImportButton)
+        return arrayListOf(row, row2)
     }
 
     private fun createHeaderRow(): TableRow {
@@ -133,6 +126,7 @@ class MainActivity : AppCompatActivity() {
             val view = v.parent.parent.parent as ViewManager
             view.removeView(v.parent.parent as ViewGroup)
             gameService?.deleteGame(game)
+            Toast.makeText(this, "Game ${game.title} deleted from device", Toast.LENGTH_SHORT).show()
         }
 
         val linearLayout = LinearLayout(this)
@@ -152,6 +146,13 @@ class MainActivity : AppCompatActivity() {
         spannable.setSpan(ForegroundColorSpan(Color.BLUE), 0, "${game.title}".length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE )
         field3.maxLines = 6
         field3.setText(spannable, TextView.BufferType.SPANNABLE)
+        field3.setOnClickListener {v ->
+            Log.d("DEBUG", "MainActivity sent id = ${game.id}")
+            val intent = Intent(this, GameDetailsActivity::class.java).apply {
+                putExtra("GAME_MESSAGE", game.id)
+            }
+            startActivity(intent)
+        }
 
         val row = TableRow(this)
         addViewsToTableRow(row, linearLayout, field2, field3)

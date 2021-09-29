@@ -29,7 +29,7 @@ class GameService(val dataBase: DataBase) {
     }
 
     fun filterGamesByTitle(title: String, games: ArrayList<Game>) {
-        Log.d("GAME_SERVICE", "filterGamesByTitle")
+        Log.d("GAME_SERVICE", "filterGamesByTitle()")
         val filteredList = games.stream().filter { game ->
             val gameTitle = game.title
             if (gameTitle != null) {
@@ -41,18 +41,28 @@ class GameService(val dataBase: DataBase) {
         games.addAll(ArrayList(filteredList))
     }
 
+    fun deleteAllGames() {
+        Log.d("GAME_SERVICE", "deleteAllGames()")
+        dataBase.getGames().forEach { game -> dataBase.deleteGame(game) }
+    }
+
     fun editStoredGame(game: Game) {
-        Log.d("GAME_SERVICE", "editStoredGame")
+        Log.d("GAME_SERVICE", "editStoredGame()")
         dataBase.updateGame(game)
     }
 
     fun storeGame(game: Game) {
-        Log.d("GAME_SERVICE", "storeGame")
+        Log.d("GAME_SERVICE", "storeGame()")
         dataBase.addGame(game)
     }
 
     fun deleteGame(game: Game) {
-        Log.d("GAME_SERVICE", "deleteGame")
+        Log.d("GAME_SERVICE", "deleteGame()")
         dataBase.deleteGame(game)
+    }
+
+    fun getStoredGame(id: Int): Game? {
+        Log.d("GAME_SERVICE", "deleteGame()")
+        return dataBase.getGame(id)
     }
 }

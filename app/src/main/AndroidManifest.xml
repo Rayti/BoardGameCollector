@@ -14,6 +14,8 @@
         android:theme="@style/Theme.BoardGameCollector"
         android:usesCleartextTraffic="true">
         <activity android:name=".AddGameActivity"></activity>
+        <activity android:name=".GameDetailsActivity"></activity>
+        <activity android:name=".ImportCollectionActivity"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

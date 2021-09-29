@@ -1,5 +1,6 @@
 package com.example.boardgamecollector
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -11,9 +12,6 @@ import android.widget.*
 import com.example.boardgamecollector.bddApi.async.response.AsyncResponseFindGameById
 import com.example.boardgamecollector.bddApi.async.response.AsyncResponseSearchGameByTitle
 import com.example.boardgamecollector.dao.DataBase
-import com.example.boardgamecollector.dao.DbHandler
-import com.example.boardgamecollector.handlers.GameApiHandler
-import com.example.boardgamecollector.handlers.SimpleGameApiHandler
 import com.example.boardgamecollector.model.Game
 import com.example.boardgamecollector.service.BggSearchService
 import com.example.boardgamecollector.service.GameService
@@ -48,10 +46,6 @@ class AddGameActivity : AppCompatActivity(), AsyncResponseSearchGameByTitle{
         tableLayout!!.addView(createSecondRow())
         tableLayout!!.addView(createHeaderRow())
         val testGame = Game()
-        testGame.title = "TITLE"
-        testGame.publishedYear = 1234
-        testGame.description = "description"
-        testGame.image = "image"
         games.forEach { game -> tableLayout!!.addView(createGameRow(game)) }
     }
 
@@ -72,6 +66,7 @@ class AddGameActivity : AppCompatActivity(), AsyncResponseSearchGameByTitle{
         addViewParams(searchButton, 1F)
         searchButton.setOnClickListener { v ->
             Log.d("BUTTON", "Clicked SEARCH button (${searchTitle?.text.toString()})")
+            Toast.makeText(this, "Searching through BoardGameGeek website", Toast.LENGTH_SHORT).show()
             if (searchTitle?.text.toString().isNotEmpty()) {
                 bggSearchService?.searchGamesByTitle(searchTitle?.text.toString(), this)
             }
@@ -126,6 +121,8 @@ class AddGameActivity : AppCompatActivity(), AsyncResponseSearchGameByTitle{
         addViewParams(importButton, 1F)
         importButton.text = "IMPORT"
         importButton.setOnClickListener { v ->
+            Log.d("BUTTON", "Clicked IMPORT button")
+            Toast.makeText(this, "Importing game ${game.title}", Toast.LENGTH_SHORT).show()
             if (game.bggId != null) {
                 bggSearchService!!.findGameThingById(game.bggId!!, this.AsyncResponseFindGameByIdImpl())
             }
@@ -148,13 +145,18 @@ class AddGameActivity : AppCompatActivity(), AsyncResponseSearchGameByTitle{
         val temporal = searchTitle?.text.toString()
         createTable(t)
         searchTitle?.setText(temporal)
+        Toast.makeText(this, "Searching finished", Toast.LENGTH_SHORT).show()
     }
 
+    private fun getContext(): Context {
+        return this
+    }
 
     inner class AsyncResponseFindGameByIdImpl: AsyncResponseFindGameById{
         override fun processFinish(t: Game?) {
             if (t != null) {
                 gameService?.storeGame(t)
+                Toast.makeText(getContext(), "Importing finished", Toast.LENGTH_SHORT).show()
             }
         }
     }
