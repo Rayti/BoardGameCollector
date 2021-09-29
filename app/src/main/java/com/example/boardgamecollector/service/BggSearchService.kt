@@ -2,8 +2,12 @@ package com.example.boardgamecollector.service
 
 import com.example.boardgamecollector.bddApi.AsyncResponse
 import com.example.boardgamecollector.bddApi.BggApiCaller
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseFindGameById
 import com.example.boardgamecollector.bddApi.async.response.AsyncResponseImportGameCollection
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseSearchGameByTitle
+import com.example.boardgamecollector.bddApi.async.task.AsyncTaskFindGameById
 import com.example.boardgamecollector.bddApi.async.task.AsyncTaskImportGameCollection
+import com.example.boardgamecollector.bddApi.async.task.AsyncTaskSearchGamesByTitle
 import com.example.boardgamecollector.bddApi.xmlparser.BoardGameCollectionRequestXmlParser
 import com.example.boardgamecollector.bddApi.xmlparser.BoardGameSearchRequestXmlParser
 import com.example.boardgamecollector.bddApi.xmlparser.BoardGameThingRequestXmlParser
@@ -13,37 +17,20 @@ import java.io.InputStream
 
 class BggSearchService {
 
-    /*fun searchGamesByTitle(title: String): ArrayList<Game> {
-        val xmlParser: XmlParser<List<Game>> = BoardGameSearchRequestXmlParser()
-        val apiCaller = BggApiCaller(xmlParser, this)
-        val stream = apiCaller.request("$ADDRESS/search?query=$title&type=boardgame")
-        if (stream != null) {
-            return ArrayList(xmlParser.parseXml(stream))
-        }
-        return ArrayList()
+    fun searchGamesByTitle(title: String, responseDelegate: AsyncResponseSearchGameByTitle){
+        AsyncTaskSearchGamesByTitle(responseDelegate).execute(title)
     }
 
-    fun findGameThingById(bggId: Int): Game? {
-        val xmlParser: XmlParser<Game?> = BoardGameThingRequestXmlParser()
-        val stream = apiCaller.request("$ADDRESS/thing?id=$bggId&stats=1")
-        if (stream != null) {
-            return  xmlParser.parseXml(stream)
-        }
-        return null
-    }*/
+
+    fun findGameThingById(bggId: Int, responseDelegate: AsyncResponseFindGameById) {
+        AsyncTaskFindGameById(responseDelegate).execute(bggId)
+    }
 
     fun importGameCollection(username: String, responseDelegate: AsyncResponseImportGameCollection) {
         AsyncTaskImportGameCollection(responseDelegate).execute(username)
     }
 
-    /*fun importGameCollection(username: String): ArrayList<Game> {
-        val xmlParser: XmlParser<List<Game>> = BoardGameCollectionRequestXmlParser()
-        val stream = apiCaller.request("$ADDRESS/collection?username=$username")
-        if (stream != null) {
-            return ArrayList(xmlParser.parseXml(stream))
-        }
-        return ArrayList()
-    }
+    /*
 
     fun searchCurrentRanking(game: Game): Int? {
         val id = game.bggId

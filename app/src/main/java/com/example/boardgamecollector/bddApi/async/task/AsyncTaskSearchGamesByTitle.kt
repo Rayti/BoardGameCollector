@@ -3,19 +3,18 @@ package com.example.boardgamecollector.bddApi.async.task
 import android.os.AsyncTask
 import android.util.Log
 import com.example.boardgamecollector.bddApi.ApiAddresses
-import com.example.boardgamecollector.bddApi.AsyncResponse
 import com.example.boardgamecollector.bddApi.BggApiCaller
-import com.example.boardgamecollector.bddApi.async.response.AsyncResponseImportGameCollection
-import com.example.boardgamecollector.bddApi.xmlparser.BoardGameCollectionRequestXmlParser
+import com.example.boardgamecollector.bddApi.async.response.AsyncResponseSearchGameByTitle
+import com.example.boardgamecollector.bddApi.xmlparser.BoardGameSearchRequestXmlParser
 import com.example.boardgamecollector.bddApi.xmlparser.XmlParser
 import com.example.boardgamecollector.model.Game
 
-class AsyncTaskImportGameCollection(val response: AsyncResponseImportGameCollection) : AsyncTask<String, Int, ArrayList<Game>>() {
+class AsyncTaskSearchGamesByTitle(val response: AsyncResponseSearchGameByTitle): AsyncTask<String, Int, ArrayList<Game>>(){
 
     override fun doInBackground(vararg params: String?): ArrayList<Game> {
-        Log.d("ASYNC", "Doing ${AsyncResponseImportGameCollection::class.java.canonicalName}")
-        val xmlParser: XmlParser<List<Game>> = BoardGameCollectionRequestXmlParser()
-        val stream = BggApiCaller().request("${ApiAddresses.ROOT.url}/collection?username=${params[0]}")
+        Log.d("ASYNC", "Doing ${AsyncTaskSearchGamesByTitle::class.java.canonicalName}")
+        val xmlParser: XmlParser<List<Game>> = BoardGameSearchRequestXmlParser()
+        val stream = BggApiCaller().request("${ApiAddresses.ROOT.url}/search?query=${params[0]}&type=boardgame")
         if (stream != null) {
             return ArrayList(xmlParser.parseXml(stream))
         }
@@ -23,8 +22,8 @@ class AsyncTaskImportGameCollection(val response: AsyncResponseImportGameCollect
     }
 
     override fun onPostExecute(result: ArrayList<Game>?) {
-        Log.d("ASYNC", "Finished ${AsyncResponseImportGameCollection::class.java.canonicalName}")
         super.onPostExecute(result)
+        Log.d("ASYNC", "Finished ${AsyncTaskSearchGamesByTitle::class.java.canonicalName}")
         if (result != null) {
             response.processFinish(result)
         }
